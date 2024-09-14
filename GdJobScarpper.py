@@ -87,13 +87,6 @@ class JobScraper:
                         location = job.find_element(By.CSS_SELECTOR, '[data-test="emp-location"]').text
                         job_link = job.find_element(By.CSS_SELECTOR, 'a[data-test="job-title"]').get_attribute('href')
                         job_age = job.find_element(By.CSS_SELECTOR, 'div[class^="JobCard_listingAge"]').text
-                        job_data = {
-                            "Job Title": job_title,
-                            "Company Name": company_name,
-                            "Location": location,
-                            "Job Link": job_link,
-                            "Job Age": job_age
-                        }
 
                         job.click()
                         self.handle_pop_up()
@@ -103,13 +96,26 @@ class JobScraper:
                             EC.presence_of_element_located((By.CSS_SELECTOR, 'div[class^="JobDetails_jobDescription"]'))
                         )
                         description_text = description_div.text
-                        job_data["Job Description"] = description_text
 
-                        # self.jobs.append(job_data)
+                        job_data = {
+                            "Job Title": job_title,
+                            "Company Name": company_name,
+                            "Location": location,
+                            "Job Link": job_link,
+                            "Job Age": job_age,
+                            "Job Description": description_text
+                        }
+
                         jobs_data.append(job_data)
 
+                         # Print job details
+                        # print(f"Job Title: {job_title}")
+                        # print(f"Company Name: {company_name}")
+                        # print(f"Location: {location}")
+                        # print(f"Job Link: {job_link}")
                         # print(f"Job Description:\n{description_text}")
-                        # print("-" * 40)
+                        # print("-" * 60)
+            
                     except Exception as e:
                         print(f"Error extracting job data: {e}")
 
