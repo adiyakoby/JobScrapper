@@ -66,6 +66,8 @@ class JobScraper:
             pass
 
     def extract_job_details(self, pages = 1):
+        jobs_data = []
+
         for _ in range(pages):
             try:
                 # Wait for job cards to be present
@@ -75,41 +77,38 @@ class JobScraper:
                 
                 print(f"Found {len(job_elements)} job listings.")
                 
-                for job in job_elements:
+                for job in job_elements[:2]:
                     try:
-                        # Extract job title
                         job_title = job.find_element(By.CSS_SELECTOR, 'a[data-test="job-title"]').text
-                        print(f"Job Title: {job_title}")
-
-                        # Extract company name
                         company_name = job.find_element(By.CSS_SELECTOR, '.EmployerProfile_compactEmployerName__LE242').text
-                        print(f"Company Name: {company_name}")
-
-                        # Extract job location
                         location = job.find_element(By.CSS_SELECTOR, '[data-test="emp-location"]').text
-                        print(f"Location: {location}")
-
-                        # Extract job link
                         job_link = job.find_element(By.CSS_SELECTOR, 'a[data-test="job-title"]').get_attribute('href')
-                        print(f"Job Link: {job_link}")
 
-                        # Click on the job link
+                        job_data = {
+                            "Job Title": job_title,
+                            "Company Name": company_name,
+                            "Location": location,
+                            "Job Link": job_link
+                        }
+
                         job.click()
-  
                         self.handle_pop_up()
                         self.click_show_more_description()
 
-                        # Wait for job description to be present with dynamic class name
                         description_div = WebDriverWait(self.driver, 10).until(
                             EC.presence_of_element_located((By.CSS_SELECTOR, 'div[class^="JobDetails_jobDescription"]'))
                         )
                         description_text = description_div.text
-                        print(f"Job Description:\n{description_text}")
+                        job_data["Job Description"] = description_text
 
-                        # Print a separator between jobs
+                        # self.jobs.append(job_data)
+                        jobs_data.append(job_data)
+
+                        # print(f"Job Description:\n{description_text}")
                         print("-" * 40)
                     except Exception as e:
                         print(f"Error extracting job data: {e}")
+
 
                 # Try to click the "Show more jobs" button, break the loop if not available
                 if not self.click_load_more():
@@ -118,9 +117,6 @@ class JobScraper:
             finally:
                 # Quit the browser after scraping
                 self.driver.quit()
+                return jobs_data
+        return jobs_data
 
-if __name__ == "__main__":
-    url = "https://www.glassdoor.com/Job/israel-software-engineer-jobs-SRCH_IL.0,6_IN119_KO7,24.htm?sortBy=date_desc"
-    scraper = JobScraper(url)
-    scraper.start_browser()
-    scraper.extract_job_details()
