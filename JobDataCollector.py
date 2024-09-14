@@ -1,11 +1,12 @@
 import csv
 import os
+from re import sub
 
 class JobDataCollector:
-    def __init__(self, jobs, csv_file_path=None):
+    def __init__(self, job_title , jobs, csv_file_path=None):
         self.jobs = jobs
         # Default to 'jobs_data.csv' in the current directory if no path is provided
-        self.csv_file_path = csv_file_path or 'jobs_data.csv'
+        self.csv_file_path = csv_file_path or sub(' ', '-', job_title) + '-jobs_data.csv'
 
     def save_to_csv(self):
         if not self.jobs:

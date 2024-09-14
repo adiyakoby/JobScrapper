@@ -10,7 +10,10 @@ import random
 from re import sub
 
 def generate_url(job_title, location = 'israel'):
-    return f"https://www.glassdoor.com/Job/{location}-{sub(' ', '-', job_title)}-jobs-SRCH_IL.0,6_IN119_KO7,24.htm?sortBy=date_desc"
+    loc_len = len(location)
+    title_len = len(job_title)
+    return f"https://www.glassdoor.com/Job/{location}-{sub(' ', '-', job_title)}-jobs-SRCH_IL.0,{loc_len}_IN119_KO{loc_len+1},{loc_len+1+title_len}.htm?sortBy=date_desc"
+
 
 class JobScraper:
     def __init__(self, url):
@@ -32,7 +35,7 @@ class JobScraper:
 
     def handle_pop_up(self):
         try:
-            close_button = WebDriverWait(self.driver, random.choice([2,2.5,3,3.5,4,4.5])).until(
+            close_button = WebDriverWait(self.driver, random.randrange(1, 3)).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'button.CloseButton'))
             )
             if close_button.is_displayed():
@@ -43,12 +46,12 @@ class JobScraper:
 
     def click_load_more(self):
         try:
-            load_more_button = WebDriverWait(self.driver, random.choice([2,2.5,3,3.5,4,4.5])).until(
+            load_more_button = WebDriverWait(self.driver, random.randrange(1, 3)).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-test="load-more"]'))
             )
             load_more_button.click()
-            print("Clicked the 'Show more jobs' button.")
-            time.sleep(2)
+            # print("Clicked the 'Show more jobs' button.")
+            time.sleep(random.random()+1)
             return True
         except Exception as e:
             print(f"No 'Show more jobs' button or error clicking it: {e}")
@@ -56,12 +59,12 @@ class JobScraper:
 
     def click_show_more_description(self):
         try:
-            show_more_button = WebDriverWait(self.driver, random.choice([2,2.5,3,3.5,4,4.5])).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, 'button.JobDetails_showMore___Le6L'))
-            )
+            show_more_button = WebDriverWait(self.driver, random.randrange(1, 3)).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "button[class^='JobDetails_showMore']"))
+            ) 
             show_more_button.click()
             print("Clicked the 'Show more' button in the job description.")
-            time.sleep(2) # Wait for the description to expand
+            time.sleep(random.random()+1) # Wait for the description to expand
         except Exception:
             pass
 
@@ -77,18 +80,19 @@ class JobScraper:
                 
                 print(f"Found {len(job_elements)} job listings.")
                 
-                for job in job_elements[:2]:
+                for job in job_elements:
                     try:
                         job_title = job.find_element(By.CSS_SELECTOR, 'a[data-test="job-title"]').text
-                        company_name = job.find_element(By.CSS_SELECTOR, '.EmployerProfile_compactEmployerName__LE242').text
+                        company_name = job.find_element(By.CSS_SELECTOR, 'div[class^="EmployerProfile_employerNameContainer"]').text
                         location = job.find_element(By.CSS_SELECTOR, '[data-test="emp-location"]').text
                         job_link = job.find_element(By.CSS_SELECTOR, 'a[data-test="job-title"]').get_attribute('href')
-
+                        job_age = job.find_element(By.CSS_SELECTOR, 'div[class^="JobCard_listingAge"]').text
                         job_data = {
                             "Job Title": job_title,
                             "Company Name": company_name,
                             "Location": location,
-                            "Job Link": job_link
+                            "Job Link": job_link,
+                            "Job Age": job_age
                         }
 
                         job.click()
@@ -105,7 +109,7 @@ class JobScraper:
                         jobs_data.append(job_data)
 
                         # print(f"Job Description:\n{description_text}")
-                        print("-" * 40)
+                        # print("-" * 40)
                     except Exception as e:
                         print(f"Error extracting job data: {e}")
 
